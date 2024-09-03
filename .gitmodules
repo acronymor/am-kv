@@ -1,0 +1,4 @@
+[submodule "third-party/gtest"]
+	path = third-party/gtest
+	url = git@github.com:google/googletest.git
+	branch = tags/v1.15.2

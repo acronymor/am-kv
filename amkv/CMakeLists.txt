@@ -1,7 +1,7 @@
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
-LIST(APPEND amkv_folder db table)
+LIST(APPEND amkv_folder db table util)
 
 FOREACH (folder ${amkv_folder})
     FILE(GLOB srcs ${folder}/*.cc)
@@ -20,6 +20,12 @@ TARGET_LINK_LIBRARIES(amkv libamkv)
 
 IF (AMKV_BUILD_TEST)
     ADD_DEFINITIONS(-DAMKV_BUILD_TEST)
+    LIST(APPEND test_libraries gtest gtest_main)
 
-    MESSAGE("Hello GTest")
+    FOREACH (test_item ${amkv_test_src})
+        GET_FILENAME_COMPONENT(test_target_name ${test_item} NAME_WE)
+        ADD_EXECUTABLE(${test_target_name} ${test_item})
+        TARGET_LINK_LIBRARIES(${test_target_name} libamkv ${test_libraries})
+        ADD_TEST(NAME ${test_target_name} COMMAND ${test_target_name})
+    ENDFOREACH ()
 ENDIF ()
