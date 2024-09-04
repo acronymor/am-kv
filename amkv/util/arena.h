@@ -1,4 +1,7 @@
+#pragma once
+
 #include <atomic>
+#include <cstdint>
 #include <iostream>
 #include <vector>
 
@@ -9,6 +12,12 @@ class Arena {
   ~Arena();
   Arena(const Arena&) = delete;
   Arena& operator=(const Arena&) = delete;
+
+  char* AllocateAligned(const std::size_t bytes);
+
+private:
+  char* allocateFallback(const std::size_t bytes);
+  char* allocateNewBlock(const std::size_t bytes);
 
  private:
   char* alloc_ptr_;
