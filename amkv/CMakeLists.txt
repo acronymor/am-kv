@@ -1,7 +1,7 @@
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
-LIST(APPEND amkv_folder db table util)
+LIST(APPEND amkv_folder db table lsm util)
 
 FOREACH (folder ${amkv_folder})
     FILE(GLOB srcs ${folder}/*.cc)
@@ -13,7 +13,7 @@ FOREACH (folder ${amkv_folder})
 ENDFOREACH ()
 
 ADD_LIBRARY(libamkv OBJECT ${amkv_src})
-TARGET_LINK_LIBRARIES(libamkv)
+TARGET_LINK_LIBRARIES(libamkv glog::glog fmt)
 
 ADD_EXECUTABLE(amkv main.cc)
 TARGET_LINK_LIBRARIES(amkv libamkv)

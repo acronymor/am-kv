@@ -2,3 +2,11 @@
 	path = third-party/gtest
 	url = git@github.com:google/googletest.git
 	branch = tags/v1.15.2
+[submodule "third-party/glog"]
+	path = third-party/glog
+	url = git@github.com:google/glog.git
+	branch = tags/v0.7.1
+[submodule "third-party/fmt"]
+	path = third-party/fmt
+	url = git@github.com:fmtlib/fmt.git
+	branch = tags/11.0.2
