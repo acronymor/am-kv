@@ -4,7 +4,7 @@
 #include "db/db_format.h"
 #include "db/write_batch.h"
 #include "lsm/memtable.h"
-#include "util/status.h"
+#include "comm/status.h"
 
 namespace amkv::db {
 
@@ -20,6 +20,6 @@ class WriteBatchInternal {
 
   static std::string_view Contents(const WriteBatch* batch);
 
-  static util::Status InsertInto(const WriteBatch* batch);
+  static comm::Status InsertInto(const WriteBatch* batch, table::MemTable* memtable);
 };
 }  // namespace amkv::db

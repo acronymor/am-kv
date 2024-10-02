@@ -1,8 +1,8 @@
-#include "table/skiplist.h"
+#include "util/skiplist.h"
 
 #include "gtest/gtest.h"
 
-namespace amkv::table {
+namespace amkv::util {
 
 typedef uint64_t Key;
 struct Comparator {

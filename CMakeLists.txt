@@ -3,6 +3,8 @@ PROJECT(amkv)
 
 SET(CMAKE_CXX_STANDARD 23)
 SET(CMAKE_CXX_FLAGS -fPIC)
+# SET(CMAKE_CXX_FLAGS_DEBUG "-fno-omit-frame-pointer -fsanitize=address")
+# SET(CMAKE_LINKER_FLAGS_DEBUG "-fno-omit-frame-pointer -fsanitize=address")
 
 ## git
 SET(GIT_COMMIT_ID "unknown_git_commit")

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util/status.h"
+#include "comm/status.h"
 
 namespace amkv::util {
 constexpr const size_t kWritableFileBufferSize = 65536;
@@ -14,11 +14,11 @@ class WritableFile {
 
   virtual ~WritableFile() = default;
 
-  virtual Status Append(const std::string_view& data) = 0;
-  virtual Status Open(int oflag) = 0;
-  virtual Status Close() = 0;
-  virtual Status Flush() = 0;
-  virtual Status Sync() = 0;
+  virtual comm::Status Append(const std::string_view& data) = 0;
+  virtual comm::Status Open(int oflag) = 0;
+  virtual comm::Status Close() = 0;
+  virtual comm::Status Flush() = 0;
+  virtual comm::Status Sync() = 0;
 };
 
 class PosixWritableFile final : public WritableFile {
@@ -26,16 +26,16 @@ class PosixWritableFile final : public WritableFile {
   PosixWritableFile(const std::string& filename);
   ~PosixWritableFile();
 
-  Status Append(const std::string_view& data) override;
-  Status Open(int oflag) override;
-  Status Close() override;
-  Status Flush() override;
-  Status Sync() override;
+  comm::Status Append(const std::string_view& data) override;
+  comm::Status Open(int oflag) override;
+  comm::Status Close() override;
+  comm::Status Flush() override;
+  comm::Status Sync() override;
 
  private:
-  Status flushBuffer();
-  Status writeUnbuffered(const char* data, size_t size);
-  Status syncFd();
+  comm::Status flushBuffer();
+  comm::Status writeUnbuffered(const char* data, size_t size);
+  comm::Status syncFd();
 
  private:
   const std::string filename_;

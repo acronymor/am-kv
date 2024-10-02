@@ -10,7 +10,7 @@
 #include "glog/export.h"
 #include "glog/logging.h"
 
-namespace amdb {
+namespace amdb::comm {
 
 #define FMT_FORMAT(format_str, ...) fmt::format(FMT_COMPILE(format_str), ##__VA_ARGS__)
 

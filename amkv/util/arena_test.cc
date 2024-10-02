@@ -20,6 +20,6 @@ TEST_F(ArenaTest, Simple) {
   student->id = 1;
   student->name = "abc";
   student->age = 18;
-  assert(static_cast<const void*>(student) == static_cast<const void*>(memory));
+  ASSERT_EQ(static_cast<const void*>(student), static_cast<const void*>(memory));
 }
 }  // namespace amkv::util

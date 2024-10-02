@@ -5,7 +5,7 @@
 #include "util/arena.h"
 #include "util/random.h"
 
-namespace amkv::table {
+namespace amkv::util {
 const std::size_t kMaxHeight = 12;
 
 template <typename Key, class Comparator>

@@ -19,8 +19,8 @@ SequenceNumber WriteBatchInternal::Sequence(WriteBatch* batch) {
 
 std::string_view WriteBatchInternal::Contents(const WriteBatch* batch) { return std::string_view(batch->rep_); }
 
-util::Status WriteBatchInternal::InsertInto(const WriteBatch* batch) {
-  return util::Status::OK();
+comm::Status WriteBatchInternal::InsertInto(const WriteBatch* batch, table::MemTable* memtable) {
+  return comm::Status::OK();
 }
 
 }  // namespace amkv::db

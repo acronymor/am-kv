@@ -1,8 +1,8 @@
-#include "util/status.h"
+#include "comm/status.h"
 
 #include <string>
 
-namespace amkv::util {
+namespace amkv::comm {
 Status::Status(const ErrorCode code, const std::string& message) {
   this->code_ = code;
   this->message_ = message;

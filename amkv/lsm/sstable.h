@@ -1,11 +1,9 @@
 #include <cstdint>
 #include <iostream>
 
-namespace amkv {
-namespace table {
+namespace amkv::table {
 class Table {
  public:
   std::uint8_t Open();
 };
-}  // namespace table
-}  // namespace amkv
+}  // namespace amkv::table

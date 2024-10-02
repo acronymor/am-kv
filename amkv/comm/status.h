@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace amkv::util {
+namespace amkv::comm {
 enum struct ErrorCode : std::uint32_t { kOk = 0, kNotFound = 1 };
 
 class Status {

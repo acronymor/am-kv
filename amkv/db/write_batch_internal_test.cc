@@ -16,7 +16,7 @@ TEST_F(WriteBatchInternalTest, Contents) {
   std::string_view content = WriteBatchInternal::Contents(&batch);
   std::cout << content << std::endl;
 
-  util::Status status = WriteBatchInternal::InsertInto(&batch);
-  assert(util::ErrorCode::kOk == status.Code());
+  comm::Status status = WriteBatchInternal::InsertInto(&batch, nullptr);
+  assert(comm::ErrorCode::kOk == status.Code());
 }
 }  // namespace amkv::db
