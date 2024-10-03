@@ -8,7 +8,7 @@ enum struct ErrorCode : std::uint32_t { kOk = 0, kNotFound = 1 };
 
 class Status {
  public:
-  Status() noexcept;
+  Status() = delete;
   ~Status() = default;
 
   Status(const ErrorCode code, const std::string& msg);

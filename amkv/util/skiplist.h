@@ -14,8 +14,8 @@ class SkipList {
   class Node;
   class Iterator;
 
-  explicit SkipList(util::Arena* arena, Comparator comparator)
-      : arena_(arena), comparator_(comparator), head_(newNode(0, kMaxHeight)), max_height_(1), random_(0xdeadbeef) {
+  explicit SkipList(Arena* arena, Comparator comparator)
+      : arena_(arena), comparator_(comparator), head_(newNode("", kMaxHeight)), max_height_(1), random_(0xdeadbeef) {
     for (std::size_t i = 0; i < kMaxHeight; i++) {
       this->head_->SetNext(i, nullptr);
     }
@@ -66,7 +66,7 @@ class SkipList {
     return new (node) Node(key);
   }
 
-  bool equal(const Key& a, const Key& b) const { return this->comparator_(a, b); }
+  bool equal(const Key& a, const Key& b) const { return this->comparator_(a, b) == 0; }
 
   Node* findGreaterOrEqual(const Key& key, Node** prev) const {
     Node* x = this->head_;
@@ -194,4 +194,4 @@ class SkipList<Key, Comparator>::Node {
  private:
   std::atomic<Node*> next_[1];
 };
-}  // namespace amkv::table
+}  // namespace amkv::util
