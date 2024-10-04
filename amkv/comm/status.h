@@ -4,7 +4,7 @@
 #include <string>
 
 namespace amkv::comm {
-enum struct ErrorCode : std::uint32_t { kOk = 0, kNotFound = 1 };
+enum struct ErrorCode : std::uint32_t { kOk = 0, kNotFound = 1, kFileError = 2 };
 
 class Status {
  public:
