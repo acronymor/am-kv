@@ -1,26 +1,17 @@
 #include "db/write_batch_internal.h"
 
-#include <util/codec.h>
-
 namespace amkv::db {
-void WriteBatchInternal::SetCount(WriteBatch& batch, std::uint32_t count) {
-  util::EncodeUInt32(count, &batch.rep_);
-}
+void WriteBatchInternal::SetCount(std::uint32_t count) { this->count_ = count; }
 
-std::uint32_t WriteBatchInternal::Count(const WriteBatch* batch) { return 0; }
+std::uint32_t WriteBatchInternal::Count() { return this->count_; }
 
-void WriteBatchInternal::SetSequence(WriteBatch* batch, SequenceNumber seq) { util::EncodeUInt64(seq, &batch->rep_); }
+void WriteBatchInternal::SetSequence(lsm::SequenceNumber seq) { this->seq_ = seq; }
 
-SequenceNumber WriteBatchInternal::Sequence(WriteBatch* batch) {
-  std::uint64_t seq = 0;
-  util::DecodeUInt64(batch->rep_, &seq);
-  return seq;
-}
+lsm::SequenceNumber WriteBatchInternal::Sequence() { return this->seq_; }
 
-std::string_view WriteBatchInternal::Contents(const WriteBatch* batch) { return std::string_view(batch->rep_); }
-
-comm::Status WriteBatchInternal::InsertInto(const WriteBatch* batch, table::MemTable* memtable) {
-  return comm::Status::OK();
+comm::Status WriteBatchInternal::InsertInto(WriteBatch* batch, table::MemTable* memtable) {
+  WriteBatchHandler handler(memtable);
+  return batch->Iterate(&handler);
 }
 
 }  // namespace amkv::db

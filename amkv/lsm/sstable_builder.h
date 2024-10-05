@@ -1,6 +1,7 @@
 #include "comm/options.h"
 #include "lsm/block_builder.h"
 #include "lsm/block_handler.h"
+#include "util/writable_file.h"
 
 namespace amkv::table {
 class SSTableBuilder {

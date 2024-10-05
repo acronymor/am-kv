@@ -1,22 +1,22 @@
 #pragma once
 
+#include <lsm/db_format.h>
+#include <lsm/memtable.h>
+
 #include <string>
 #include <string_view>
-
-#include "comm/status.h"
-#include "db/write_batch_handler.h"
-
 namespace amkv::db {
-
-class WriteBatch {
+// MemTableInserter
+class WriteBatchHandler {
  public:
+  WriteBatchHandler(table::MemTable* memtable);
+
   void Put(const std::string_view key, const std::string_view value);
 
   void Delete(const std::string_view key);
 
-  comm::Status Iterate(WriteBatchHandler* handler);
-
  private:
-  std::string rep_;
+  lsm::SequenceNumber sequence_;
+  table::MemTable* memtable_;
 };
 }  // namespace amkv::db
