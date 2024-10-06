@@ -59,6 +59,32 @@ comm::Status DB::Write(const comm::WriteOptions& options, WriteBatch* updates) {
   WriteBatchInternal write_batch_internal;
   write_batch_internal.SetSequence(0);
   status = write_batch_internal.InsertInto(updates, this->mem_);
+
+  status = makeRoomForWrite(true);
+
   return status;
+}
+
+comm::Status DB::makeRoomForWrite(bool force) {
+  while (true) {
+    if (!force && this->mem_->Usage() <= 4 * 104 * 1024) {
+      break;
+    } else if (this->imm_ != nullptr) {
+      std::cout << "Current memtable full; wating...";
+    } else {
+      lsm::MinorCompaction minor;
+      if (minor.CanDoCompaction()) {
+        this->imm_ = this->mem_;
+        this->mem_ = new table::MemTable(&this->internal_comparator_);
+        this->mem_->Ref();
+        // it should be placed on background task
+        comm::Status status = minor.Do(this->imm_);
+        // this->imm_ = nullptr;
+      }
+      break;
+    }
+  }
+
+  return comm::Status::OK();
 }
 }  // namespace amkv::db

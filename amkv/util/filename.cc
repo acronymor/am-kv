@@ -10,4 +10,9 @@ std::string LogFileName(const std::string& dbname, const std::uint64_t number) {
 std::string TableFileName(const std::string& dbname, const std::uint64_t number) {
   return MakeFileName(dbname, number, "ldb");
 }
+
+std::string SSTableFileName(const std::string& dbname, const std::uint64_t number) {
+  return MakeFileName(dbname, number, "sst");
+}
+
 }  // namespace amkv::util

@@ -46,7 +46,7 @@ PosixWritableFile::~PosixWritableFile() {
   }
 }
 
-comm::Status PosixWritableFile::Append(const std::string_view& data) {
+comm::Status PosixWritableFile::Append(const std::string_view data) {
   std::size_t write_size = data.size();
   const char* write_data = data.data();
   size_t copy_size = std::min(write_size, kWritableFileBufferSize - this->pos_);

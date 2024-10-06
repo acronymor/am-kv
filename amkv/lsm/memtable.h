@@ -1,13 +1,14 @@
 #pragma once
 
+#include <comm/iterator.h>
 #include <comm/status.h>
 
 #include <cstdint>
 
 #include "lsm/comparator.h"
 #include "lsm/db_format.h"
-#include "util/arena.h"
 #include "lsm/skiplist.h"
+#include "util/arena.h"
 
 namespace amkv::table {
 class LookupKey {
@@ -31,6 +32,8 @@ class LookupKey {
 };
 
 class MemTable {
+  friend class MemTableIterator;
+
  public:
   MemTable(const lsm::InternalKeyComparator* comparator);
   ~MemTable();
@@ -44,6 +47,8 @@ class MemTable {
   void Add(lsm::SequenceNumber seq, lsm::ValueType type, const std::string_view key, const std::string_view value);
   bool Get(const LookupKey& key, std::string* value, comm::Status* status);
 
+  [[nodiscard]] std::size_t Usage() const;
+
  private:
   std::uint64_t refs_;
   util::Arena arena_;
@@ -51,7 +56,7 @@ class MemTable {
   using Table = lsm::SkipList<const std::string_view, const std::string_view>;
 
   lsm::MemTableKeyComparator* comparator_;
-  Table table_;
+  Table* table_;
 };
 
 }  // namespace amkv::table

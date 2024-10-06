@@ -76,7 +76,6 @@ K SkipListIterator<K, V>::Key() const {
 
 template <typename K, typename V>
 V SkipListIterator<K, V>::Value() const {
-  return "";
 }
 
 template <typename K, typename V>

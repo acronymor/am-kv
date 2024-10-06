@@ -1,9 +1,9 @@
 #include "lsm/memtable.h"
 
-#include <util/codec.h>
-
+#include <cassert>
 #include <cstring>
 
+#include "lsm/codec.h"
 #include "lsm/skiplist_iter.h"
 #include "util/codec.h"
 
@@ -27,9 +27,13 @@ std::string_view LookupKey::memtable_key() const { return {this->key_.data() + s
 std::string_view LookupKey::internal_key() const { return {this->key_.data() + kstart_, end_ - kstart_}; }
 
 MemTable::MemTable(const lsm::InternalKeyComparator* comparator)
-    : comparator_(new lsm::MemTableKeyComparator(comparator)), refs_(0), table_(&arena_, comparator){};
+    : comparator_(new lsm::MemTableKeyComparator(comparator)), refs_(0),
+      table_(new lsm::SkipList<const std::string_view, const std::string_view>(&arena_, comparator)){};
 
-MemTable::~MemTable() { assert(refs_ == 0); }
+MemTable::~MemTable() {
+  delete comparator_;
+  delete table_;
+}
 
 void MemTable::Ref() { this->refs_++; }
 
@@ -41,50 +45,30 @@ void MemTable::UnRef() {
 void MemTable::Add(lsm::SequenceNumber seq, lsm::ValueType type, const std::string_view key,
                    const std::string_view value) {
   std::string out;
-  std::size_t len = 0;
-  len += util::EncodeBytes(key, &out);
-  len += util::EncodeUInt64(seq, &out);
-  len += util::EncodeUInt8(static_cast<std::uint8_t>(type), &out);
-  len += util::EncodeBytes(value, &out);
+  std::size_t len = EncodeMemTable(key, value, seq, type, &out);
   char* buf = this->arena_.AllocateAligned(len);
   std::memcpy(buf, out.data(), out.size());
   std::string_view slice(buf, len);
-  this->table_.Insert(slice);
+  this->table_->Insert(slice);
 }
 
 bool MemTable::Get(const LookupKey& key, std::string* value, comm::Status* status) {
   std::string_view mem_key = key.memtable_key();
-  lsm::SkiplistIterator iter(&this->table_);
+  lsm::SkipListIterator iter(this->table_);
   iter.Seek(mem_key);
   if (iter.Valid()) {
-    std::string_view entry = iter.Key();
-
-    std::uint32_t len = 0;
-    util::DecodeUInt32(entry.substr(len, sizeof(std::uint32_t)), &len);
-
-    std::string key1;
-    len = util::DecodeBytes(entry.substr(0, len + sizeof(std::uint32_t)), &key1);
+    const std::string_view entry = iter.Key();
+    std::string real_key;
 
     std::uint64_t seq = 0;
-    len += util::DecodeUInt64(entry.substr(len, sizeof(std::uint64_t)), &seq);
+    lsm::ValueType type = lsm::ValueType::kTypeDeletion;
+    std::size_t len = DecodeMemTable(entry, &real_key, value, &seq, &type);
 
-    std::uint8_t type1 = 0;
-    len += util::DecodeUInt8(entry.substr(len, sizeof(std::uint8_t)), &type1);
-
-    lsm::ValueType type = static_cast<lsm::ValueType>(type1);
-    switch (type) {
-      case lsm::ValueType::kTypeValue: {
-        len += util::DecodeBytes(entry.substr(len), value);
-        *status = comm::Status::OK();
-      } break;
-      case lsm::ValueType::kTypeDeletion: {
-        *status = comm::Status(comm::ErrorCode::kNotFound, "Not Found, " + std::string(entry));
-      } break;
-    }
-
-    return true;
+    return len == entry.size();
   }
 
   return false;
 }
+
+std::size_t MemTable::Usage() const { return this->arena_.Usage(); }
 }  // namespace amkv::table

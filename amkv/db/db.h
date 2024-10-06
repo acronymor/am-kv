@@ -23,6 +23,9 @@ class DB {
   comm::Status Write(const comm::WriteOptions& options, WriteBatch* updates);
 
  private:
+  comm::Status makeRoomForWrite(bool force);
+
+ private:
   std::string db_name_;
 
   table::MemTable* mem_{nullptr};

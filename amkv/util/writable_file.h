@@ -14,7 +14,7 @@ class WritableFile {
 
   virtual ~WritableFile() = default;
 
-  virtual comm::Status Append(const std::string_view& data) = 0;
+  virtual comm::Status Append(const std::string_view data) = 0;
   virtual comm::Status Open(int oflag) = 0;
   virtual comm::Status Close() = 0;
   virtual comm::Status Flush() = 0;
@@ -26,7 +26,7 @@ class PosixWritableFile final : public WritableFile {
   PosixWritableFile(const std::string& filename);
   ~PosixWritableFile();
 
-  comm::Status Append(const std::string_view& data) override;
+  comm::Status Append(const std::string_view data) override;
   comm::Status Open(int oflag) override;
   comm::Status Close() override;
   comm::Status Flush() override;
