@@ -8,7 +8,6 @@ namespace amkv::db {
 
 class DB {
  public:
-  DB() = default;
   DB(const comm::Options& options, std::string name);
   DB(const DB&) = delete;
   ~DB();

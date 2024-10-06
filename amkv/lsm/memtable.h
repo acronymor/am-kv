@@ -7,7 +7,7 @@
 #include "lsm/comparator.h"
 #include "lsm/db_format.h"
 #include "util/arena.h"
-#include "util/skiplist.h"
+#include "lsm/skiplist.h"
 
 namespace amkv::table {
 class LookupKey {
@@ -32,7 +32,7 @@ class LookupKey {
 
 class MemTable {
  public:
-  MemTable(const lsm::InternalKeyComparator& comparator);
+  MemTable(const lsm::InternalKeyComparator* comparator);
   ~MemTable();
 
   MemTable(const MemTable&) = delete;
@@ -48,9 +48,9 @@ class MemTable {
   std::uint64_t refs_;
   util::Arena arena_;
 
-  using Table = util::SkipList<const std::string_view, lsm::MemTableKeyComparator>;
+  using Table = lsm::SkipList<const std::string_view, const std::string_view>;
 
-  const lsm::MemTableKeyComparator comparator_;
+  lsm::MemTableKeyComparator* comparator_;
   Table table_;
 };
 

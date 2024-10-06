@@ -5,7 +5,7 @@
 
 namespace amkv::lsm {
 struct Comparator {
-  virtual ~Comparator() = default;
+  virtual ~Comparator() {};
 
   virtual std::int64_t Compare(const std::string_view lhs, const std::string_view rhs) const = 0;
 
@@ -15,6 +15,7 @@ struct Comparator {
 class InternalKeyComparator : public Comparator {
  public:
   InternalKeyComparator(const Comparator* comparator);
+  ~InternalKeyComparator();
 
   std::int64_t Compare(const std::string_view lhs, const std::string_view rhs) const override;
 
@@ -27,6 +28,7 @@ class InternalKeyComparator : public Comparator {
 class BytewiseComparator : public Comparator {
  public:
   BytewiseComparator() = default;
+  ~BytewiseComparator();
 
   std::int64_t Compare(const std::string_view lhs, const std::string_view rhs) const override;
 
@@ -36,7 +38,7 @@ class BytewiseComparator : public Comparator {
 struct MemTableKeyComparator {
   const InternalKeyComparator comparator;
 
-  MemTableKeyComparator(const InternalKeyComparator& comparator);
+  explicit MemTableKeyComparator(const InternalKeyComparator& comparator);
 
   std::int64_t operator()(const std::string_view lhs, const std::string_view rhs) const;
 };

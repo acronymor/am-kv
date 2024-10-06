@@ -10,7 +10,7 @@ TEST_F(MemtableTest, Simple) {
   BytewiseComparator comparator1;
   InternalKeyComparator comparator2(&comparator1);
 
-  table::MemTable mem_table(comparator2);
+  table::MemTable mem_table(&comparator2);
 
   SequenceNumber seq = 1;
   mem_table.Add(seq, ValueType::kTypeValue, "key1", "value1");

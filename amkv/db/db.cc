@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "db/write_batch_internal.h"
+#include "lsm/compaction.h"
 
 namespace amkv::db {
 
@@ -18,7 +19,7 @@ comm::Status DB::Open(const comm::Options& options, const std::string& name, DB*
   DB* ptr = new DB(options, name);
 
   if (ptr->mem_ == nullptr) {
-    ptr->mem_ = new table::MemTable(ptr->internal_comparator_);
+    ptr->mem_ = new table::MemTable(&ptr->internal_comparator_);
     ptr->mem_->Ref();
   }
 

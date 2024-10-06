@@ -2,6 +2,7 @@
 
 #include "gtest/gtest.h"
 #include "lsm/block_builder.h"
+#include "util/writable_file.h"
 
 namespace amkv::block {
 

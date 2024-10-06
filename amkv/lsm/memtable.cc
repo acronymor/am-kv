@@ -4,6 +4,9 @@
 
 #include <cstring>
 
+#include "lsm/skiplist_iter.h"
+#include "util/codec.h"
+
 namespace amkv::table {
 
 LookupKey::LookupKey(const std::string_view user_key, lsm::SequenceNumber seq) {
@@ -23,8 +26,8 @@ std::string_view LookupKey::memtable_key() const { return {this->key_.data() + s
 
 std::string_view LookupKey::internal_key() const { return {this->key_.data() + kstart_, end_ - kstart_}; }
 
-MemTable::MemTable(const lsm::InternalKeyComparator& comparator)
-    : comparator_(lsm::MemTableKeyComparator(comparator)), refs_(0), table_(&arena_, comparator_) {}
+MemTable::MemTable(const lsm::InternalKeyComparator* comparator)
+    : comparator_(new lsm::MemTableKeyComparator(comparator)), refs_(0), table_(&arena_, comparator){};
 
 MemTable::~MemTable() { assert(refs_ == 0); }
 
@@ -51,10 +54,10 @@ void MemTable::Add(lsm::SequenceNumber seq, lsm::ValueType type, const std::stri
 
 bool MemTable::Get(const LookupKey& key, std::string* value, comm::Status* status) {
   std::string_view mem_key = key.memtable_key();
-  Table::Iterator iter(&this->table_);
+  lsm::SkiplistIterator iter(&this->table_);
   iter.Seek(mem_key);
   if (iter.Valid()) {
-    std::string_view entry = iter.key();
+    std::string_view entry = iter.Key();
 
     std::uint32_t len = 0;
     util::DecodeUInt32(entry.substr(len, sizeof(std::uint32_t)), &len);

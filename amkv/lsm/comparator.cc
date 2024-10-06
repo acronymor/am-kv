@@ -6,12 +6,16 @@ namespace amkv::lsm {
 
 InternalKeyComparator::InternalKeyComparator(const Comparator* comparator) : comparator_(comparator) {}
 
+InternalKeyComparator::~InternalKeyComparator() {}
+
 std::int64_t InternalKeyComparator::Compare(const std::string_view lhs, const std::string_view rhs) const {
   std::cout << "InternalKeyComparator::Compare" << std::endl;
   return lhs.compare(rhs);
 }
 
 const std::string InternalKeyComparator::Name() const { return "amkv.InternalKeyComparator"; }
+
+BytewiseComparator::~BytewiseComparator() {}
 
 std::int64_t BytewiseComparator::Compare(const std::string_view lhs, const std::string_view rhs) const {
   return lhs.compare(rhs);
