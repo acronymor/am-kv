@@ -23,7 +23,7 @@ class WritableFile {
 
 class PosixWritableFile final : public WritableFile {
  public:
-  PosixWritableFile(const std::string& filename);
+  explicit PosixWritableFile(const std::string& filename);
   ~PosixWritableFile();
 
   comm::Status Append(const std::string_view data) override;
