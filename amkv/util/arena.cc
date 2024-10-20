@@ -1,5 +1,6 @@
 #include "util/arena.h"
 
+#include <cstdint>
 #include <iostream>
 
 namespace amkv::util {
@@ -12,6 +13,7 @@ Arena::~Arena() {
     delete[] block;
   }
 }
+
 char* Arena::AllocateAligned(const std::size_t bytes) {
   constexpr int align = 8;
   const std::size_t currend_mod = reinterpret_cast<std::uintptr_t>(this->alloc_ptr_) & (align - 1);
@@ -29,6 +31,8 @@ char* Arena::AllocateAligned(const std::size_t bytes) {
 
   return result;
 }
+
+std::size_t Arena::Usage() const { return this->memory_usage_.load(std::memory_order_relaxed); }
 
 char* Arena::allocateFallback(const std::size_t bytes) {
   if (bytes > kBlockSize / 4) {

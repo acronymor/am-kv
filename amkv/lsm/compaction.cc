@@ -20,7 +20,7 @@ comm::Status MinorCompaction::WriteLevel0Table(const table::MemTable* const memt
   std::string fname = util::TableFileName(db_name, table_id);
 
   table::SSTable sstable;
-  comm::Status status = sstable.BuildTable(fname, memtable);
+  comm::Status status = sstable.Put(fname, memtable);
 
   return comm::Status::OK();
 }

@@ -3,13 +3,14 @@
 #include <fcntl.h>
 
 #include "gtest/gtest.h"
+#include "util/file.h"
 
 namespace amkv::table {
-class SSTableTest : public testing::Test {};
+class SSTableBuilderTest : public testing::Test {};
 
-TEST_F(SSTableTest, Simple) {
+TEST_F(SSTableBuilderTest, Simple) {
   comm::Options options;
-  util::WritableFile* file = new util::PosixWritableFile("/tmp/sstable_test.txt");
+  util::WritableFile* file = new util::PosixWritableFile("/tmp/sstable_test.ldb");
   file->Open(O_TRUNC | O_WRONLY | O_CREAT | O_CLOEXEC);
 
   SSTableBuilder builder(options, file);

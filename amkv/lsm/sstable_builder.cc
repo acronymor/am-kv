@@ -1,36 +1,17 @@
 #include "lsm/sstable_builder.h"
 
+#include "util/codec.h"
+
 namespace amkv::table {
-struct SSTableBuilder::Rep {
-  Rep(const comm::Options* options, util::WritableFile* file)
-      : options(options), file(file), status(comm::ErrorCode::kOk, ""){};
-
-  const comm::Options* options;
-  util::WritableFile* file;
-
-  std::string last_key;
-
-  std::uint64_t offset{0};
-  comm::Status status;
-
-  block::BlockHandler pending_handle;
-  bool pending_index_entry{false};
-
-  block::BlockBuilder data_block;
-  block::BlockBuilder filter_block;
-  block::BlockBuilder meta_index_block;
-  block::BlockBuilder index_block;
-  block::BlockBuilder footer_block;
-};
 
 SSTableBuilder::SSTableBuilder(const comm::Options& options, util::WritableFile* file)
-    : rep_(new Rep(&options, file)){};
+    : rep_(new SSTableBuilderRep(&options, file)){};
 
 SSTableBuilder::~SSTableBuilder() { delete this->rep_; }
 
 comm::Status SSTableBuilder::Finish() {
   this->flush();
-  Rep* rep = this->rep_;
+  SSTableBuilderRep* rep = this->rep_;
 
   block::BlockHandler filter_block_handler;
   this->writeBlock(&rep->filter_block, &filter_block_handler);
@@ -64,9 +45,17 @@ comm::Status SSTableBuilder::Finish() {
 }
 
 void SSTableBuilder::Add(const std::string_view key, const std::string_view value) {
-  Rep* rep = this->rep_;
+  SSTableBuilderRep* rep = this->rep_;
 
-  rep->data_block.Add(key, value);
+  // TODO why need to copy?
+  std::string a(key);
+  std::string b(value);
+
+  std::string tmp_key;
+  std::string tmp_value;
+  util::EncodeBytes(a, &tmp_key);
+  util::EncodeBytes(b, &tmp_value);
+  rep->data_block.Add(tmp_key, tmp_value);
 
   if (rep->pending_index_entry) {
     std::string index_handle_encoding;
@@ -84,7 +73,7 @@ void SSTableBuilder::Add(const std::string_view key, const std::string_view valu
 }
 
 void SSTableBuilder::flush() {
-  Rep* rep = this->rep_;
+  SSTableBuilderRep* rep = this->rep_;
 
   if (this->Status().Code() != comm::ErrorCode::kOk) {
     return;
@@ -96,6 +85,7 @@ void SSTableBuilder::flush() {
 
   this->writeBlock(&rep->data_block, &rep->pending_handle);
 
+  // TODO
   if (this->Status().Code() == comm::ErrorCode::kOk) {
     rep->pending_index_entry = true;
     rep->status = rep->file->Flush();
@@ -112,14 +102,15 @@ void SSTableBuilder::writeBlock(block::BlockBuilder* block, block::BlockHandler*
 }
 
 void SSTableBuilder::writeRawBlock(const std::string_view block_content, block::BlockHandler* handler) {
-  Rep* rep = this->rep_;
+  const std::string crc32 = "crc32";
+  SSTableBuilderRep* rep = this->rep_;
   handler->SetOffset(rep->offset);
   handler->SetSize(block_content.size());
   rep->status = rep->file->Append(block_content);
   if (rep->status.Code() == comm::ErrorCode::kOk) {
-    rep->status = rep->file->Append("crc32");
+    rep->status = rep->file->Append(crc32);
     if (rep->status.Code() == comm::ErrorCode::kOk) {
-      rep->offset += block_content.size() + sizeof("crc32");
+      rep->offset += block_content.size() + crc32.length();
     }
   }
 }

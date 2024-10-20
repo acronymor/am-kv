@@ -44,4 +44,6 @@ comm::Status PosixAccessFile::Read(std::uint64_t offset, std::size_t n, std::str
   return comm::Status::OK();
 }
 
+std::size_t PosixAccessFile::Size() { return this->file_size_; }
+
 }  // namespace amkv::util

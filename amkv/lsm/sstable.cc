@@ -2,26 +2,22 @@
 
 #include <fcntl.h>
 
-#include <iostream>
-
+#include "block_iter.h"
 #include "lsm/memtable_iter.h"
 #include "lsm/sstable_builder.h"
+#include "sstable_resolver.h"
+#include "util/access_file.h"
+#include "util/file.h"
 
 namespace amkv::table {
-std::uint8_t SSTable::Open() {
-  std::cout << "DB::Open" << std::endl;
-  return 0;
-}
-
-comm::Status SSTable::BuildTable(const std::string& fname, const table::MemTable* const memtable) {
+comm::Status SSTable::Put(const std::string& fname, const MemTable* const memtable) {
   util::WritableFile* file = new util::PosixWritableFile(fname);
   file->Open(O_TRUNC | O_WRONLY | O_CREAT | O_CLOEXEC);
   comm::Options options;
 
-  table::SSTableBuilder* builder = new table::SSTableBuilder(options, file);
-  table::MemTableIterator iter(memtable);
-  iter.SeekToFirst();
-  for (; iter.Valid(); iter.Next()) {
+  SSTableBuilder* builder = new SSTableBuilder(options, file);
+  MemTableIterator iter(memtable);
+  for (iter.SeekToFirst(); iter.Valid(); iter.Next()) {
     std::string_view key = iter.Key();
     std::string_view value = iter.Value();
     builder->Add(key, value);
@@ -41,5 +37,26 @@ comm::Status SSTable::BuildTable(const std::string& fname, const table::MemTable
   return status;
 }
 
-comm::Status SSTable::FindTable(const std::string& fname) {}
+comm::Status SSTable::Get(const std::string& fname, const std::string_view key, std::string* out) {
+  util::AccessFile* file = new util::PosixAccessFile(fname);
+  comm::Status status = file->Open(O_RDONLY | O_CLOEXEC);
+  std::string footer_input;
+  comm::Options options;
+
+  SSTableResolver* resolver = new SSTableResolver(options, file);
+  status = resolver->Finish();
+  const auto rep = resolver->Rep();
+
+  std::string data_content;
+  status = file->Read(rep->data_block_handler.GetOffset(), rep->data_block_handler.GetSize(), &data_content);
+  block::Block block(data_content);
+
+  block::BlockIterator iter(&block);
+  iter.SeekToFirst();
+
+  iter.Seek(std::string(key));
+  *out = iter.Value();
+
+  return status;
+}
 }  // namespace amkv::table

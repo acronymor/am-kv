@@ -1,3 +1,5 @@
+#pragma once
+
 #include "comm/status.h"
 
 namespace amkv::util {
@@ -13,6 +15,7 @@ class AccessFile {
   virtual comm::Status Open(int oflag) = 0;
   virtual comm::Status Close() = 0;
   virtual comm::Status Read(std::uint64_t offset, std::size_t n, std::string* result) = 0;
+  virtual std::size_t Size() = 0;
 };
 
 class PosixAccessFile final : public AccessFile {
@@ -22,6 +25,7 @@ class PosixAccessFile final : public AccessFile {
   comm::Status Open(int oflag) override;
   comm::Status Close() override;
   comm::Status Read(std::uint64_t offset, std::size_t n, std::string* result) override;
+  std::size_t Size() override;
 
 private:
   int fd_;
