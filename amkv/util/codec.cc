@@ -42,6 +42,7 @@ std::size_t EncodeBytes(const std::string_view in, std::string* out) {
   out->append(in.data(), in.size());
   return in.size() + ret;
 }
+
 std::size_t DecodeBytes(const std::string_view in, std::string* out) {
   std::uint32_t len = 0;
   const std::size_t ret = DecodeUInt32(in, &len);

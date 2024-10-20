@@ -1,7 +1,7 @@
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
-LIST(APPEND amkv_folder comm util db lsm)
+LIST(APPEND amkv_folder comm util lsm db)
 
 FOREACH (folder ${amkv_folder})
     FILE(GLOB srcs ${folder}/*.cc)
