@@ -15,6 +15,8 @@ class BlockHandler {
 
   void SetOffset(std::uint64_t offset);
   void SetSize(std::uint64_t size);
+  std::uint64_t GetOffset() const;
+  std::uint64_t GetSize() const;
 
  private:
   std::uint64_t offset_;

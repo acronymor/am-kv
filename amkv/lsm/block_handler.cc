@@ -21,4 +21,8 @@ comm::Status BlockHandler::DecodeFrom(std::string_view input) {
 void BlockHandler::SetOffset(std::uint64_t offset) { this->offset_ = offset; }
 
 void BlockHandler::SetSize(std::uint64_t size) { this->size_ = size; }
+
+std::uint64_t BlockHandler::GetOffset() const { return this->offset_; }
+
+std::uint64_t BlockHandler::GetSize() const { return this->size_; }
 }  // namespace amkv::block

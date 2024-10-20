@@ -4,6 +4,8 @@
 
 #include "db/write_batch_internal.h"
 #include "lsm/compaction.h"
+#include "lsm/sstable.h"
+#include "util/filename.h"
 
 namespace amkv::db {
 
@@ -48,7 +50,11 @@ comm::Status DB::Get(const comm::ReadOptions& options, const std::string_view ke
   if (this->mem_->Get(lookup_key, value, &status)) {
   } else if (this->imm_ != nullptr && this->imm_->Get(lookup_key, value, &status)) {
   } else {
-    std::cout << "SSTable Get" << std::endl;
+    table::SSTable sstable;
+    std::string db_name = "db_name";
+    std::uint64_t table_id = 0;
+    std::string fname = util::TableFileName(db_name, table_id);
+    status = sstable.Get(fname, key, value);
   }
 
   return status;
