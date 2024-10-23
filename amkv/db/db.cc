@@ -1,7 +1,11 @@
 #include "db/db.h"
 
+#include <bits/fs_fwd.h>
+#include <fcntl.h>
+
 #include <utility>
 
+#include "comm/log.h"
 #include "db/write_batch_internal.h"
 #include "lsm/compaction.h"
 #include "lsm/sstable.h"
@@ -23,6 +27,13 @@ comm::Status DB::Open(const comm::Options& options, const std::string& name, DB*
   if (ptr->mem_ == nullptr) {
     ptr->mem_ = new table::MemTable(&ptr->internal_comparator_);
     ptr->mem_->Ref();
+
+    std::string fname = "test-db.log";
+    util::WritableFile* file = new util::PosixWritableFile(fname);
+    file->Open(O_TRUNC | O_WRONLY | O_CREAT | O_CLOEXEC);
+
+    ptr->log_file_ = file;
+    ptr->log_ = new log::Writer(ptr->log_file_);
   }
 
   *db = ptr;
@@ -62,8 +73,16 @@ comm::Status DB::Get(const comm::ReadOptions& options, const std::string_view ke
 
 comm::Status DB::Write(const comm::WriteOptions& options, WriteBatch* updates) {
   comm::Status status = comm::Status::OK();
+
   WriteBatchInternal write_batch_internal;
   write_batch_internal.SetSequence(0);
+  status = this->log_->AddRecord(write_batch_internal.Contents(updates));
+  if (status.Code() == comm::ErrorCode::kOk) {
+    status = this->log_file_->Sync();
+    if (status.Code() != comm::ErrorCode::kOk) {
+      WARN("Sync failed");
+    }
+  }
   status = write_batch_internal.InsertInto(updates, this->mem_);
 
   status = makeRoomForWrite(true);

@@ -9,6 +9,8 @@
 namespace amkv::db {
 
 class WriteBatch {
+ friend class WriteBatchInternal;
+
  public:
   void Put(const std::string_view key, const std::string_view value);
 

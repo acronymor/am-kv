@@ -6,7 +6,7 @@
 #include "skiplist_iter.h"
 
 namespace amkv::table {
-class MemTableIterator : public comm::Iterator<std::string_view, std::string_view> {
+class MemTableIterator : public comm::Iterator<std::string, std::string> {
  public:
   MemTableIterator(const MemTable* memtable);
   ~MemTableIterator() override;
@@ -14,11 +14,11 @@ class MemTableIterator : public comm::Iterator<std::string_view, std::string_vie
   [[nodiscard]] bool Valid() const override;
   void SeekToFirst() override;
   void SeekToLast() override;
-  void Seek(const std::string_view& target) override;
+  void Seek(const std::string& target) override;
   void Next() override;
   void Prev() override;
-  std::string_view Key() const override;
-  std::string_view Value() const override;
+  std::string Key() const override;
+  std::string Value() const override;
   comm::Status Status() const override;
 
  private:

@@ -17,6 +17,8 @@ class WriteBatchInternal {
 
   lsm::SequenceNumber Sequence();
 
+  std::string Contents(const WriteBatch* batch);
+
   comm::Status InsertInto(WriteBatch* batch, table::MemTable* memtable);
 
  private:

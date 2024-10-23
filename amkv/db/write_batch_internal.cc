@@ -9,6 +9,8 @@ void WriteBatchInternal::SetSequence(lsm::SequenceNumber seq) { this->seq_ = seq
 
 lsm::SequenceNumber WriteBatchInternal::Sequence() { return this->seq_; }
 
+std::string WriteBatchInternal::Contents(const WriteBatch* batch) { return batch->rep_; }
+
 comm::Status WriteBatchInternal::InsertInto(WriteBatch* batch, table::MemTable* memtable) {
   WriteBatchHandler handler(memtable);
   return batch->Iterate(&handler);

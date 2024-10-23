@@ -47,14 +47,10 @@ comm::Status SSTableBuilder::Finish() {
 void SSTableBuilder::Add(const std::string_view key, const std::string_view value) {
   SSTableBuilderRep* rep = this->rep_;
 
-  // TODO why need to copy?
-  std::string a(key);
-  std::string b(value);
-
   std::string tmp_key;
   std::string tmp_value;
-  util::EncodeBytes(a, &tmp_key);
-  util::EncodeBytes(b, &tmp_value);
+  util::EncodeBytes(key, &tmp_key);
+  util::EncodeBytes(value, &tmp_value);
   rep->data_block.Add(tmp_key, tmp_value);
 
   if (rep->pending_index_entry) {

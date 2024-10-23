@@ -18,8 +18,8 @@ comm::Status SSTable::Put(const std::string& fname, const MemTable* const memtab
   SSTableBuilder* builder = new SSTableBuilder(options, file);
   MemTableIterator iter(memtable);
   for (iter.SeekToFirst(); iter.Valid(); iter.Next()) {
-    std::string_view key = iter.Key();
-    std::string_view value = iter.Value();
+    const std::string key = iter.Key();
+    const std::string value = iter.Value();
     builder->Add(key, value);
   }
 
@@ -47,6 +47,7 @@ comm::Status SSTable::Get(const std::string& fname, const std::string_view key, 
   status = resolver->Finish();
   const auto rep = resolver->Rep();
 
+  // TODO I can quickly locate DataBlock based on the IndexBlock
   std::string data_content;
   status = file->Read(rep->data_block_handler.GetOffset(), rep->data_block_handler.GetSize(), &data_content);
   block::Block block(data_content);

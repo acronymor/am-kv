@@ -27,6 +27,8 @@ class DB {
 
  private:
   std::string db_name_;
+  log::Writer* log_;
+  util::WritableFile* log_file_;
 
   table::MemTable* mem_{nullptr};
   table::MemTable* imm_{nullptr};
