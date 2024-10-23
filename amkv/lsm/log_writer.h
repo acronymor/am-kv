@@ -1,7 +1,7 @@
 #include <string_view>
 
-#include "lsm/log_format.h"
 #include "comm/status.h"
+#include "lsm/log_format.h"
 #include "util/writable_file.h"
 
 namespace amkv::log {
@@ -13,9 +13,12 @@ class Writer {
   Writer(const Writer&) = delete;
   Writer& operator=(const Writer&) = delete;
 
-  comm::Status AddRecord(const std::string_view& slice);
+  comm::Status AddRecord(const std::string_view record);
 
  private:
+  comm::Status emitPhysicalRecord(RecordType type, const char* ptr, std::size_t length);
+
   util::WritableFile* dest_;
-};
-}  // namespace amkv::log
+  std::size_t block_offset_;
+};  // namespace log
+}  // namespace amkv::lsm
