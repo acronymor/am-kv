@@ -24,30 +24,32 @@ comm::Status WriteBatch::Iterate(WriteBatchHandler* handler) {
     return len;
   };
 
-  std::size_t len = 0;
-  std::string key;
-  std::string value;
-
   std::string_view input(this->rep_);
-  char tag = input[0];
-  input.remove_prefix(1);
 
-  switch (static_cast<lsm::ValueType>(tag)) {
-    case lsm::ValueType::kTypeValue: {
-      len = func(input, &key);
-      input.remove_prefix(len);
+  while (!input.empty()) {
+    std::size_t len = 0;
+    std::string key;
+    std::string value;
+    char tag = input[0];
+    input.remove_prefix(1);
 
-      len = func(input, &value);
-      input.remove_prefix(len);
+    switch (static_cast<lsm::ValueType>(tag)) {
+      case lsm::ValueType::kTypeValue: {
+        len = func(input, &key);
+        input.remove_prefix(len);
 
-      handler->Put(key, value);
-    } break;
-    case lsm::ValueType::kTypeDeletion: {
-      len = func(input, &key);
-      input.remove_prefix(len);
+        len = func(input, &value);
+        input.remove_prefix(len);
 
-      handler->Delete(key);
-    } break;
+        handler->Put(key, value);
+      } break;
+      case lsm::ValueType::kTypeDeletion: {
+        len = func(input, &key);
+        input.remove_prefix(len);
+
+        handler->Delete(key);
+      } break;
+    }
   }
 
   return comm::Status::OK();

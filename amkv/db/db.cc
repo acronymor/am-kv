@@ -5,6 +5,7 @@
 
 #include <utility>
 
+#include "comm/filename.h"
 #include "comm/log.h"
 #include "db/write_batch_internal.h"
 #include "lsm/compaction.h"
@@ -13,12 +14,36 @@
 
 namespace amkv::db {
 
-DB::DB(const comm::Options& options, std::string name)
-    : db_name_(std::move(name)), internal_comparator_(options.comparator) {}
+DB::DB(const comm::Options& options, std::string dbname)
+    : env_(options.env), internal_comparator_(options.comparator), db_name_(std::move(dbname)) {
+}
 
 DB::~DB() {
   delete this->mem_;
   delete this->imm_;
+}
+
+comm::Status DB::NewDB() {
+  version::VersionEdit edit;
+  const std::string manifest = comm::DescriptorFileName(this->db_name_, 1);
+  util::WritableFile* file;
+  comm::Status status = this->env_->NewWritableFile(manifest, &file);
+  if (comm::ErrorCode::kOk != status.Code()) {
+    return status;
+  }
+
+  log::Writer log(file);
+  std::string record;
+  edit.EncodeTo(&record);
+  status = log.AddRecord(record);
+  if (comm::ErrorCode::kOk != status.Code()) {
+    status = file->Sync();
+  }
+  if (status.Code() != comm::ErrorCode::kOk) {
+    status = file->Close();
+  }
+  delete file;
+  return status;
 }
 
 comm::Status DB::Open(const comm::Options& options, const std::string& name, DB** db) {
@@ -28,11 +53,8 @@ comm::Status DB::Open(const comm::Options& options, const std::string& name, DB*
     ptr->mem_ = new table::MemTable(&ptr->internal_comparator_);
     ptr->mem_->Ref();
 
-    std::string fname = "test-db.log";
-    util::WritableFile* file = new util::PosixWritableFile(fname);
-    file->Open(O_TRUNC | O_WRONLY | O_CREAT | O_CLOEXEC);
-
-    ptr->log_file_ = file;
+    std::uint64_t new_log_number = 0;
+    ptr->env_->NewWritableFile(util::LogFileName(name, new_log_number), &ptr->log_file_);
     ptr->log_ = new log::Writer(ptr->log_file_);
   }
 
@@ -62,9 +84,8 @@ comm::Status DB::Get(const comm::ReadOptions& options, const std::string_view ke
   } else if (this->imm_ != nullptr && this->imm_->Get(lookup_key, value, &status)) {
   } else {
     table::SSTable sstable;
-    std::string db_name = "db_name";
     std::uint64_t table_id = 0;
-    std::string fname = util::TableFileName(db_name, table_id);
+    std::string fname = util::TableFileName(this->db_name_, table_id);
     status = sstable.Get(fname, key, value);
   }
 
@@ -80,13 +101,20 @@ comm::Status DB::Write(const comm::WriteOptions& options, WriteBatch* updates) {
   if (status.Code() == comm::ErrorCode::kOk) {
     status = this->log_file_->Sync();
     if (status.Code() != comm::ErrorCode::kOk) {
-      WARN("Sync failed");
+      WARN("Sync Failed");
+      return status;
     }
   }
   status = write_batch_internal.InsertInto(updates, this->mem_);
+  if (status.Code() != comm::ErrorCode::kOk) {
+    WARN("Write Batch Insert Failed");
+    return status;
+  }
 
   status = makeRoomForWrite(true);
-
+  if (status.Code() != comm::ErrorCode::kOk) {
+    WARN("Make Room Failed");
+  }
   return status;
 }
 
@@ -95,16 +123,16 @@ comm::Status DB::makeRoomForWrite(bool force) {
     if (!force && this->mem_->Usage() <= 4 * 104 * 1024) {
       break;
     } else if (this->imm_ != nullptr) {
-      std::cout << "Current memtable full; wating...";
+      INFO("Current memtable full; wating...");
     } else {
-      lsm::MinorCompaction minor;
+      lsm::MinorCompaction minor(this->db_name_);
       if (minor.CanDoCompaction()) {
         this->imm_ = this->mem_;
         this->mem_ = new table::MemTable(&this->internal_comparator_);
         this->mem_->Ref();
         // it should be placed on background task
         comm::Status status = minor.Do(this->imm_);
-        // this->imm_ = nullptr;
+        this->imm_ = nullptr;
       }
       break;
     }
@@ -112,4 +140,5 @@ comm::Status DB::makeRoomForWrite(bool force) {
 
   return comm::Status::OK();
 }
+
 }  // namespace amkv::db

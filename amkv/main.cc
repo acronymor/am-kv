@@ -4,11 +4,10 @@
 
 #include "db/db.h"
 #include "lsm/sstable.h"
-#include "util/arena.h"
 
 namespace amkv {
 std::uint32_t Init(int argc, char* argv[]) {
-  if (amdb::comm::init_log(argv[0]) != 0) {
+  if (comm::init_log(argv[0]) != 0) {
     FATAL("{}", "log init failed.")
     return -1;
   }
@@ -17,14 +16,14 @@ std::uint32_t Init(int argc, char* argv[]) {
   comm::Options options;
   std::string db_name = "t_db";
   comm::Status status = db::DB::Open(options, db_name, &db);
-  db->Put(comm::WriteOptions(), "key", "value");
 
-  /*
-  table::Table table;
-  table.Open();
+  comm::WriteOptions write_options;
+  db->Put(write_options, "aaa", "key1-value1");
 
-  util::Arena arena;
-  */
+  std::string value;
+  db->Get(comm::ReadOptions(), "aaa", &value);
+  std::cout << "ok: output=>" <<  value << std::endl;
+
   return 0;
 }
 }  // namespace amkv

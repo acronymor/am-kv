@@ -55,7 +55,8 @@ comm::Status SSTable::Get(const std::string& fname, const std::string_view key, 
   block::BlockIterator iter(&block);
   iter.SeekToFirst();
 
-  iter.Seek(std::string(key));
+  std::string kkey = std::string(key);
+  iter.Seek(kkey);
   *out = iter.Value();
 
   return status;

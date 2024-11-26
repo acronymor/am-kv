@@ -3,14 +3,17 @@
 #include "db/writer.h"
 #include "lsm/log_writer.h"
 #include "lsm/memtable.h"
+#include "lsm/version_set.h"
 
 namespace amkv::db {
 
 class DB {
  public:
-  DB(const comm::Options& options, std::string name);
+  DB(const comm::Options& options, std::string dbname);
   DB(const DB&) = delete;
   ~DB();
+
+ comm::Status NewDB();
 
   static comm::Status Open(const comm::Options& options, const std::string& name, DB** db);
 
@@ -26,6 +29,8 @@ class DB {
   comm::Status makeRoomForWrite(bool force);
 
  private:
+  comm::Env* const env_;
+
   std::string db_name_;
   log::Writer* log_;
   util::WritableFile* log_file_;

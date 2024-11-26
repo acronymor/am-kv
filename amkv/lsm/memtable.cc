@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstring>
 
+#include "fmt/base.h"
 #include "lsm/codec.h"
 #include "lsm/skiplist_iter.h"
 #include "util/codec.h"
@@ -10,21 +11,21 @@
 namespace amkv::table {
 
 LookupKey::LookupKey(const std::string_view user_key, lsm::SequenceNumber seq) {
-  std::size_t len = 0;
-  this->start_ = len;
-
-  len += util::EncodeBytes(user_key, &this->key_);
-  this->kstart_ = len;
-
-  len += util::EncodeUInt64(seq, &this->key_);
-  this->end_ = this->kstart_ + len + sizeof(std::uint32_t);
+  std::size_t len = EncodeMemTable(user_key, "", seq, lsm::ValueType::kTypeValue, &this->memtable_key_);
+  this->start_ = 0;
+  this->end_ = len;
+  this->kstart_ = len - sizeof(std::uint64_t);
 }
 
-std::string_view LookupKey::user_key() const { return {this->key_.data() + this->end_, sizeof(std::uint8_t)}; }
+std::string_view LookupKey::user_key() const {
+  return this->memtable_key_.substr(this->kstart_, this->end_ - sizeof(std::uint64_t) + 1);
+};
 
-std::string_view LookupKey::memtable_key() const { return {this->key_.data() + start_, this->end_ - this->start_}; }
+std::string_view LookupKey::memtable_key() const { return this->memtable_key_; }
 
-std::string_view LookupKey::internal_key() const { return {this->key_.data() + kstart_, end_ - kstart_}; }
+std::string_view LookupKey::internal_key() const {
+  return this->memtable_key_.substr(this->kstart_, this->end_ - this->kstart_ + 1);
+}
 
 MemTable::MemTable(const lsm::InternalKeyComparator* comparator)
     : comparator_(new lsm::MemTableKeyComparator(comparator)), refs_(0),

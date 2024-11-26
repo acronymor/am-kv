@@ -52,8 +52,11 @@ std::string BlockIterator::Key() const {
 
 std::string BlockIterator::Value() const {
   std::uint32_t len = getBytesLength(this->block_->contents_, this->offset_);
-
   std::string value;
+  if (this->offset_ + len > this->block_->contents_.size()) {
+    return value;
+  }
+
   util::DecodeBytes(this->block_->contents_.substr(this->offset_ + len), &value);
   return value;
 }

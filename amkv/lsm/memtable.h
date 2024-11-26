@@ -1,6 +1,5 @@
 #pragma once
 
-#include <comm/iterator.h>
 #include <comm/status.h>
 
 #include <cstdint>
@@ -24,11 +23,11 @@ class LookupKey {
   std::string_view internal_key() const;
 
  private:
+  std::string memtable_key_;
+
   std::size_t start_;
   std::size_t end_;
   std::size_t kstart_;
-
-  std::string key_;
 };
 
 class MemTable {

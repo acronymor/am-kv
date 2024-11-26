@@ -2,7 +2,7 @@
 
 namespace amkv::db {
 
-WriteBatchHandler::WriteBatchHandler(table::MemTable* memtable) : memtable_(memtable) {}
+WriteBatchHandler::WriteBatchHandler(table::MemTable* memtable) : memtable_(memtable), sequence_(0) {}
 
 void WriteBatchHandler::Put(const std::string_view key, const std::string_view value) {
   this->memtable_->Add(this->sequence_, lsm::ValueType::kTypeValue, key, value);

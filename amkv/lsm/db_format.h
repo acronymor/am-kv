@@ -3,6 +3,8 @@
 #include <cstdint>
 
 namespace amkv::lsm {
+static const int kNumLevels = 7;
+
 typedef std::uint64_t SequenceNumber;
 
 static const SequenceNumber kMaxSequenceNumber = ((0x1ull << 56) - 1);

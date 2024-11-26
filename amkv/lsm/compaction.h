@@ -1,5 +1,6 @@
 #include "comm/status.h"
 #include "lsm/memtable.h"
+#include "lsm/version.h"
 
 namespace amkv::lsm {
 class Compaction {
@@ -9,7 +10,7 @@ class Compaction {
 
 class MinorCompaction {
  public:
-  MinorCompaction();
+  MinorCompaction(const std::string db_name);
 
   bool CanDoCompaction();
 
@@ -19,6 +20,8 @@ class MinorCompaction {
  private:
   table::MemTable* mem_;
   table::MemTable* imm_;
+
+  std::string db_name_;
 };
 
 class MajorCompaction {};

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string_view>
 
 #include "comm/status.h"
@@ -21,4 +23,4 @@ class Writer {
   util::WritableFile* dest_;
   std::size_t block_offset_;
 };  // namespace log
-}  // namespace amkv::lsm
+}  // namespace amkv::log
