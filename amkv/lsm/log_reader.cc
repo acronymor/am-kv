@@ -13,10 +13,14 @@ Reader::Reader(util::SequentialFile* dest)
 
 Reader::~Reader() { delete[] backing_store_; }
 
-bool Reader::ReadRecord(std::string* scratch) {
+bool Reader::ReadRecord(std::string* record, std::string* scratch) {
   if (this->last_record_offset_ < this->initial_offset_) {
     ERROR("ERROR: ReadRecord");
   }
+
+  record->clear();
+  scratch->clear();
+
   std::uint64_t prospective_record_offset = 0;
   std::string fragment;
   while (true) {
@@ -29,6 +33,7 @@ bool Reader::ReadRecord(std::string* scratch) {
         prospective_record_offset = physical_record_offset;
         scratch->clear();
         scratch->assign(fragment.begin(), fragment.end());
+        record->assign(fragment.begin(), fragment.end());
         this->last_record_offset_ = prospective_record_offset;
       }
         return true;
@@ -41,6 +46,7 @@ bool Reader::ReadRecord(std::string* scratch) {
       } break;
       case kLastType: {
         scratch->append(fragment.begin(), fragment.end());
+        record->assign(fragment.begin(), fragment.end());
         this->last_record_offset_ = prospective_record_offset;
         return true;
       } break;

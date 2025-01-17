@@ -20,6 +20,8 @@ class SSTableBuilder {
 
   comm::Status Status() const;
 
+  std::size_t FileSize() const;
+
  private:
   void flush();
 

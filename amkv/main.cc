@@ -18,10 +18,16 @@ std::uint32_t Init(int argc, char* argv[]) {
   comm::Status status = db::DB::Open(options, db_name, &db);
 
   comm::WriteOptions write_options;
-  db->Put(write_options, "aaa", "key1-value1");
+  db->Put(write_options, "key1", "key1-value1");
+  db->Write(write_options, nullptr);
+  db->Put(write_options, "key2", "key2-value2");
+  db->Write(write_options, nullptr);
+  db->Put(write_options, "key3", "key3-value3");
+  db->Write(write_options, nullptr);
 
   std::string value;
-  db->Get(comm::ReadOptions(), "aaa", &value);
+  comm::ReadOptions read_options;
+  db->Get(read_options, "key2", &value);
   std::cout << "ok: output=>" <<  value << std::endl;
 
   return 0;

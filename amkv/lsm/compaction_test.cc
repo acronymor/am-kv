@@ -17,7 +17,9 @@ TEST_F(MinorCompactionTest, Simple) {
   mem_table.Add(seq, ValueType::kTypeValue, "key1", "value1");
   mem_table.Add(seq, ValueType::kTypeValue, "key2", "value2");
 
-  comm::Status status = minor.Do(&mem_table);
+  version::VersionEdit edit;
+  version::Version base;
+  comm::Status status = minor.Do(&mem_table, &base, &edit, 0);
 
   EXPECT_EQ(comm::ErrorCode::kOk, status.Code());
 }

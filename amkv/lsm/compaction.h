@@ -14,8 +14,8 @@ class MinorCompaction {
 
   bool CanDoCompaction();
 
-  comm::Status Do(const table::MemTable* const memtable);
-  comm::Status WriteLevel0Table(const table::MemTable* const memtable);
+  comm::Status Do(const table::MemTable* const memtable, version::Version* base, version::VersionEdit* edit, std::size_t new_number);
+  comm::Status WriteLevel0Table(const table::MemTable* const memtable, version::FileMetaData* meta);
 
  private:
   table::MemTable* mem_;

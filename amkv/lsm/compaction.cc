@@ -5,30 +5,31 @@
 #include "util/filename.h"
 
 namespace amkv::lsm {
-MinorCompaction::MinorCompaction(std::string dbname): db_name_(std::move(dbname)) {}
+MinorCompaction::MinorCompaction(std::string dbname) : db_name_(std::move(dbname)) {}
 
 bool MinorCompaction::CanDoCompaction() { return true; }
 
-comm::Status MinorCompaction::Do(const table::MemTable* const memtable) {
-  comm::Status status = this->WriteLevel0Table(memtable);
+comm::Status MinorCompaction::Do(const table::MemTable* const memtable, version::Version* base,
+                                 version::VersionEdit* edit, std::uint64_t new_number) {
+  version::FileMetaData meta{.number = new_number};
+  comm::Status status = this->WriteLevel0Table(memtable, &meta);
 
-  version::FileMetaData meta = {
-      .refs = 0,
-      .number = 1,
-      .file_size = 20,
-      .smallest = "a",
-      .largest = "z",
-  };
+  if (status.Code() == comm::ErrorCode::kOk && meta.file_size > 0) {
+    std::size_t level = 0;
+    if (base != nullptr) {
+      level = base->PickLevelForMemTableOutput(meta.smallest, meta.largest);
+    }
+    edit->AddFile(level, &meta);
+  }
 
-  return comm::Status::OK();
+  return status;
 }
 
-comm::Status MinorCompaction::WriteLevel0Table(const table::MemTable* const memtable) {
-  std::uint64_t table_id = 0;
-  std::string fname = util::TableFileName(this->db_name_, table_id);
+comm::Status MinorCompaction::WriteLevel0Table(const table::MemTable* const memtable, version::FileMetaData* meta) {
+  std::string fname = util::TableFileName(this->db_name_, meta->number);
 
   table::SSTable sstable;
-  comm::Status status = sstable.Put(fname, memtable);
+  comm::Status status = sstable.Put(fname, memtable, meta);
 
   return status;
 }

@@ -13,7 +13,7 @@ class DB {
   DB(const DB&) = delete;
   ~DB();
 
- comm::Status NewDB();
+  comm::Status NewDB();
 
   static comm::Status Open(const comm::Options& options, const std::string& name, DB** db);
 
@@ -27,6 +27,8 @@ class DB {
 
  private:
   comm::Status makeRoomForWrite(bool force);
+  comm::Status recover(version::VersionEdit* edit, bool* save_manifest);
+  void removeObsoleteFiles();
 
  private:
   comm::Env* const env_;
@@ -35,9 +37,12 @@ class DB {
   log::Writer* log_;
   util::WritableFile* log_file_;
 
+  std::uint64_t logfile_number_;
+
   table::MemTable* mem_{nullptr};
   table::MemTable* imm_{nullptr};
 
   const lsm::InternalKeyComparator internal_comparator_;
+  version::VersionSet* const versions_;
 };
 }  // namespace amkv::db

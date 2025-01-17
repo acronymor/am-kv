@@ -89,6 +89,7 @@ void SSTableBuilder::flush() {
 }
 
 comm::Status SSTableBuilder::Status() const { return this->rep_->status; }
+std::size_t SSTableBuilder::FileSize() const { return this->rep_->offset; }
 
 void SSTableBuilder::writeBlock(block::BlockBuilder* block, block::BlockHandler* handler) {
   std::string_view raw = block->Build();

@@ -11,7 +11,7 @@ class Reader {
   Reader(const Reader&) = delete;
   Reader& operator=(const Reader&) = delete;
 
-  bool ReadRecord(std::string* scratch);
+  bool ReadRecord(std::string* record, std::string* scratch);
 
  private:
   enum EndRecordType {

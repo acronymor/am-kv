@@ -7,23 +7,29 @@
 #include "lsm/sstable_builder.h"
 #include "sstable_resolver.h"
 #include "util/access_file.h"
-#include "util/file.h"
 
 namespace amkv::table {
-comm::Status SSTable::Put(const std::string& fname, const MemTable* const memtable) {
+comm::Status SSTable::Put(const std::string& fname, const MemTable* const memtable, version::FileMetaData* meta) {
   util::WritableFile* file = new util::PosixWritableFile(fname);
   file->Open(O_TRUNC | O_WRONLY | O_CREAT | O_CLOEXEC);
   comm::Options options;
 
   SSTableBuilder* builder = new SSTableBuilder(options, file);
   MemTableIterator iter(memtable);
-  for (iter.SeekToFirst(); iter.Valid(); iter.Next()) {
+  iter.SeekToFirst();
+
+  meta->smallest = iter.Key();
+
+  for (; iter.Valid(); iter.Next()) {
     const std::string key = iter.Key();
     const std::string value = iter.Value();
     builder->Add(key, value);
+    meta->largest = iter.Key();
   }
 
   comm::Status status = builder->Finish();
+  meta->file_size = builder->FileSize();
+
   delete builder;
 
   if (status.Code() == comm::ErrorCode::kOk) {

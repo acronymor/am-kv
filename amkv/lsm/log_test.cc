@@ -28,8 +28,9 @@ TEST_F(WALLogTest, Simple) {
   status = readable_log_file->Open(O_RDONLY | O_CLOEXEC);
   EXPECT_EQ(comm::ErrorCode::kOk, status.Code());
   Reader reader(readable_log_file);
+  std::string record;
   std::string scratch;
-  bool res = reader.ReadRecord(&scratch);
+  bool res = reader.ReadRecord(&record, &scratch);
   EXPECT_TRUE(res);
   readable_log_file->Close();
   delete readable_log_file;
